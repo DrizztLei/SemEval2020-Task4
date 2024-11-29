@@ -1,0 +1,24 @@
+fix_idx = 10
+white_list = ['lamda1', 'lamda2',
+	              'roberta.lamda1', 'roberta.lamda2',
+	              'roberta.classifier.weight',
+	              'roberta.classifier.bias']
+
+print('unfixed layers: ', ', '.join(np.array(model_parameters)[fix_idx:, 0]))
+print('white list: ', ', '.join(white_list))
+for idx, (name, i) in enumerate(model.named_parameters()):
+	if idx < fix_idx:
+		i.requires_grad = False
+	if name in white_list:
+		i.requires_grad = True
+print('iterate list done!')
+
+for p in model.parameters():
+	p.requires_grad = True
+
+optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args['lr'])
+optimizer = optim.Adam(model.parameters(), lr=args['fine_tune_lr'], eps=args['adam_epsilon'])
+train_loss, train_acc, train_pred = train(model, train_data, optimizer, args, True)
+
+
+
